@@ -25,8 +25,10 @@ public struct Web3Options {
     
     public static func defaultOptions() -> Web3Options{
         var options = Web3Options()
-        options.gasLimit = BigUInt("90000", radix: 10)!
-        options.gasPrice = BigUInt("5000000000", radix:10)!
+//        options.gasLimit = BigUInt("90000", radix: 10)!
+//        options.gasPrice = BigUInt("5000000000", radix:10)!
+        options.gasLimit = BigUInt(0)
+        options.gasPrice = BigUInt(0)
         options.value = BigUInt(0)
         return options
     }
@@ -82,19 +84,26 @@ public struct Web3Options {
         return newOptions
     }
     
-    public static func smartMergeGasLimit(originalOptions: Web3Options?, extraOptions: Web3Options?, gasEstimage: BigUInt) -> BigUInt? {
+    public static func smartMergeGasLimit(originalOptions: Web3Options?, extraOptions: Web3Options?, gasEstimate: BigUInt) -> BigUInt? {
         guard let mergedOptions = Web3Options.merge(originalOptions, with: extraOptions) else {return nil} //just require any non-nils
         if mergedOptions.gasLimit == nil {
-            return nil // there is no opinion from user, so we can not proceed
+            return gasEstimate // for user's convenience we just use an estimate
+//            return nil // there is no opinion from user, so we can not proceed
         } else {
-            if originalOptions != nil, originalOptions!.gasLimit != nil, originalOptions!.gasLimit! < gasEstimage { // original gas estimate was less than what's required, so we check extra options
-                if extraOptions != nil, extraOptions!.gasLimit != nil, extraOptions!.gasLimit! >= gasEstimage {
+            if originalOptions != nil, originalOptions!.gasLimit != nil, originalOptions!.gasLimit! < gasEstimate { // original gas estimate was less than what's required, so we check extra options
+                if extraOptions != nil, extraOptions!.gasLimit != nil, extraOptions!.gasLimit! >= gasEstimate {
                     return extraOptions!.gasLimit!
                 } else {
-                    return nil
+                    return gasEstimate // for user's convenience we just use an estimate
+//                    return nil // estimate is lower than allowed
                 }
             } else {
-                return gasEstimage
+                if extraOptions != nil, extraOptions!.gasLimit != nil, extraOptions!.gasLimit! >= gasEstimate {
+                    return extraOptions!.gasLimit!
+                } else {
+                    return gasEstimate // for user's convenience we just use an estimate
+                    //                    return nil // estimate is lower than allowed
+                }
             }
         }
     }
